@@ -1,0 +1,78 @@
+<html>
+<head>
+<link rel="stylesheet" type="text/css" href="./css/main.css">
+<script src="./js/jquery.min.js"></script>
+<script>
+
+var checked_url = '/';
+
+is_html_file = window.location.href.match(/.html$/);
+is_dir = window.location.href.match(/\/$/);
+
+if(!is_html_file && !is_dir) {
+  document.location = window.location.href+'/';
+}
+
+function f_kill(event) {
+	hb_alive.style.display = "none";
+  hb_dead.style.display = "inline";
+	view.style.background = "#CD0000";
+	heartbeat.pause();
+	flatline.play();
+};
+
+function f_animate(event) {
+	hb_alive.style.display = "inline";
+  hb_dead.style.display = "none";
+	flatline.pause();
+	setTimeout("heartbeat.play()",600);
+};
+
+$.ajaxSetup({timeout: 3000});
+
+var heartbeat = new Audio("mp3/heartbeat.mp3");
+var flatline = new Audio("mp3/flatline.mp3");
+flatline.loop = true;
+
+function update_rtt() {
+var start_time = new Date().getTime();
+
+$.ajax({
+		url: checked_url,
+		type: "GET",
+		timeout: 3000,
+		success: function(response) { 
+    				      var request_time = new Date().getTime() - start_time;
+        		      if(request_time > 1000) {view.style.background = "#CD0000"};
+                  if(request_time > 500)  {view.style.background = "orange"};
+                  if(request_time <= 500) {view.style.background = "#32CD32"};
+                  view.innerHTML = request_time/1000 + " ";
+                  f_animate();
+    	},
+    	error: function(x, t, m) {
+                  view.innerHTML = t;
+                  f_kill();
+    	}
+	});
+};
+
+window.setInterval(update_rtt, 2500);
+</script>
+</head>
+<body>
+<div id="view" class="rtt">
+  0.000
+</div>
+<div class="container">
+<div class="heart-rate">
+<svg version="1.0" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="750px" height="365px" viewBox="0 0 750 365" enable-background="new 0 0 750 365" xml:space="preserve">
+    <polyline id="hb_alive" fill="none" stroke="#32CD32" stroke-width="10" stroke-miterlimit="10" points="0,225 190,225 220,165 250,225 285,225 310,275 355,45 400,315 420,225 485,225 515,200 550,225 750,225"/>
+    <polyline id="hb_dead" fill="none" stroke="#CD0000" stroke-width="10" stroke-miterlimit="10" points="0,225 190,225 220,225 250,225 285,225 310,225 355,225 400,225 420,225 485,225 515,225 550,225 750,225" style = "display:none"/>
+  </svg>
+
+  <div id="f_in" class="fade-in"></div>
+  <div id="f_out" class="fade-out"></div>
+
+</div>
+</body>
+</html>
